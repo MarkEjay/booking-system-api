@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 
 //add roles
+//Note:
+// Add city,province,country and postal code
 const merchantSchema = mongoose.Schema({
     firstname:{
         type: String, require: true
@@ -27,6 +29,22 @@ const merchantSchema = mongoose.Schema({
     password: {
         type: String, require: true
     },
+    address:{
+        type: String, 
+
+    },
+    city:{
+        type: String, 
+
+    },
+    province:{
+        type: String, 
+
+    },
+    postalcode:{
+        type: String, 
+
+    }
 })
 
 // userSchema.post('save', (doc, next) => {

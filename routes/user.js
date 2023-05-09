@@ -9,10 +9,24 @@ const { config } = require('dotenv');
 const verifyToken = require('../middleware/auth')
 const Requests = require('../models/Request')
 const Merchant = require('../models/Merchant')
+var nodemailer = require('nodemailer');
 
 
-router.get('/' ,verifyToken, async (req, res) => {
-    console.log(verifyToken)
+var transport = nodemailer.createTransport({
+    host: "sandbox.smtp.mailtrap.io",
+    port: 2525,
+    auth: {
+      user: "0174822c626521",
+      pass: "0a9e6dd18d4083"
+    }
+  });
+
+ 
+  
+  
+
+router.get('/' , async (req, res) => {
+    //console.log(verifyToken)
     try {
         const user = await User.find({})
         res.status(200).json({ user })
@@ -23,7 +37,7 @@ router.get('/' ,verifyToken, async (req, res) => {
 })
 
 router.get('/home', verifyToken, async (req,res) => {
-    console.log(verifyToken)
+    //console.log(verifyToken)
     res.send("Auth correct")
 })
 
@@ -68,8 +82,13 @@ router.get("get-user/:id", (req, res, next) => {
 
 router.post('/signup',  (req, res) => {
     //const { firstname, lastname,phone, email, password } = req.body;
-    console.log("hi")
+    //console.log("hi")
 
+    const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let code = '';
+    for (let i = 0; i < 25; i++) {
+        code += characters[Math.floor(Math.random() * characters.length )];
+    }
     try {
 
         User.findOne({
@@ -91,7 +110,11 @@ router.post('/signup',  (req, res) => {
                     phone:req.body.phone,
                     role:req.body.role,
                     email:req.body.email, 
-                    password: bcrypt.hashSync(req.body.password,8)})
+                    password: bcrypt.hashSync(req.body.password,8),
+                    isActive:"false",
+                    confirmationCode:code
+                }
+                    )
                 
                 res.status(200).send('user created')
             }
@@ -117,7 +140,7 @@ router.post('/signup',  (req, res) => {
 })
 
 router.post('/login', (req, res) => {
-    const { email, password } = req.body;
+    //const { email, password } = req.body;
     try {
         User.findOne({
             email: req.body.email
@@ -138,12 +161,32 @@ router.post('/login', (req, res) => {
                     message:"Invalid Credentials!"
                 });
             } 
+            // if(user.isActive == 'false'){
+            //     return res.status(401).send({
+            //         message: "Pending Account. Please Verify Your Email!",
+            //       });
+            // }
             var token = jwt.sign({id: user.id}, process.env.token,{
                 expiresIn: 86400//24hrs
             })
 
-            console.log(token)
-            console.log(user.id)
+            // var mailOptions = {
+            //     from: '"Example Team" <from@example.com>',
+            //     to: user.email,
+            //     subject: 'Activate Your Account',
+            //     text: 'Hey there, it’s our first message sent with Nodemailer ',
+            //     html: `<b>Hey ${user.firstname}! </b><br> You just created an account with Neon<br /> Click the link to activate your account`,
+                
+            //   };
+
+            // transport.sendMail(mailOptions, (error, info) => {
+            //     if (error) {
+            //       return console.log(error);
+            //     }
+            //     console.log('Message sent: %s', info.messageId);
+            //   });
+            
+
             res.status(200).send({
                 id: user._id,
                 firstname:user.firstname,
@@ -161,6 +204,22 @@ router.post('/login', (req, res) => {
 }
 })
 
+router.put('/edit-user/:id', (req,res,next)=>{
+    User.findById(req.params.id).then(user=>{
+        if(user){
+            console.log(user)
+
+            user.email=req.body.email;
+            user.save()
+            res.status(200).json(user);
+
+        }
+        else{
+            res.status(404).json({message: "Request not found"})
+        }
+    })
+})
+
 router.post('/add-request', (req,res)=>{
     Merchant.findOne({
         merchantid: req.body.merchantid
@@ -174,16 +233,33 @@ router.post('/add-request', (req,res)=>{
             res.status(400).send({ message: "Failed! MerchantId doesnt exist" });
             return;
         }
+
         else{
             console.log("doesnt exist")
             const request = Requests.create({ userid:req.body.userid, 
+                useremail:req.body.useremail,
                 merchantid:req.body.merchantid, 
                 created: new Date().toISOString(), 
                 appointment:req.body.appointment,
                 description:req.body.description, 
                 status:"pending", 
             })
-            
+            console.log(merc.email)
+            // var mailOptions = {
+            //     from: '"Example Team" <from@example.com>',
+            //     to: merc.email,
+            //     subject: 'New Request',
+            //     text: 'Hey there, it’s our first message sent with Nodemailer ',
+            //     html: `<b>Hey ${merc.firstname}! </b><br> You just received a new request on Neon<br />`,
+                
+            //   };
+
+            // transport.sendMail(mailOptions, (error, info) => {
+            //     if (error) {
+            //       return console.log(error);
+            //     }
+            //     console.log('Message sent: %s', info.messageId);
+            //   });
             res.status(200).send('request sent')
         }
     })
@@ -197,6 +273,7 @@ router.get('/view-request/:id', (req,res) =>{
       });
 
 })
+
 
 // router.get('/view-request',verifyToken, (req,res) =>{
 //     Requests.find({ userid: req.userId }).then((request) => {

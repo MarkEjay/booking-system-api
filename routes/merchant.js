@@ -5,11 +5,25 @@ const router = express.Router()
 //const Task = require('../models/Task')
 const Merchant = require('../models/Merchant')
 const Requests = require('../models/Request')
+const Service = require('../models/Service')
+const User = require('../models/User')
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { config } = require('dotenv');
 //const verifyToken = require('../middleware/auth')
+var nodemailer = require('nodemailer');
+
+
+var transport = nodemailer.createTransport({
+    host: "sandbox.smtp.mailtrap.io",
+    port: 2525,
+    auth: {
+      user: "0174822c626521",
+      pass: "0a9e6dd18d4083"
+    }
+  });
+
 
 //add verifyToken
 router.get('/home', async (req,res) => {
@@ -18,9 +32,19 @@ router.get('/home', async (req,res) => {
 })
 
 
+router.get('/', async (req, res) => {
+    try {
+        const merchant = await Merchant.find({})
+        res.status(200).json({ merchant })
+    }
+    catch (err) {
+        res.status(404).send('error: ' + err.message)
+    }
+})
+
 router.post('/signup',  (req, res) => {
   //  const { firstname, lastname, email, password } = req.body;
-    console.log("hi")
+    //console.log("hi")
 
     try {
 
@@ -150,9 +174,34 @@ router.get('/view-request/:id', (req,res) =>{
 })
 
 router.delete('/delete-request/:id', (req,res,next)=>{
+    // console.log(req.params.id)
+
+    // Requests.findById(req.params.id).then(rst=>{
+    //     User.findById(rst.userid).then(usr=>{
+    //         // console.log(usr)
+    //         var mailOptions = {
+    //             from: '"Example Team" <from@example.com>',
+    //             to: usr.email,
+    //             subject: 'Request Declined',
+    //             text: 'Hey there, it’s our first message sent with Nodemailer ',
+    //             html: `<b>Hey! </b><br> Your Request has been declined <br />`,
+                
+    //           };
+
+    //         transport.sendMail(mailOptions, (error, info) => {
+    //             if (error) {
+    //               return console.log(error);
+    //             }
+    //             console.log('Message sent: %s', info.messageId);
+    //           });
+    //     })
+    //     })
     Requests.findByIdAndDelete(req.params.id).then(request=>{
         if(request){
+
             res.status(200).json(request);
+            
+            
         }
         else{
             res.status(404).json({ message: "Request not found" })
@@ -163,6 +212,8 @@ router.delete('/delete-request/:id', (req,res,next)=>{
 router.put('/edit-request/:id', (req,res,next)=>{
     Requests.findById(req.params.id).then(request=>{
         if(request){
+            console.log(request)
+
             request.status=req.body.status;
             request.save()
             res.status(200).json(request);
@@ -174,4 +225,52 @@ router.put('/edit-request/:id', (req,res,next)=>{
     })
 })
 
+
+// let merchant add services to their page for customers to see
+router.post('/add-service', (req,res)=>{
+    Merchant.findOne({
+        merchantid: req.body.merchantid
+    }).exec((err, merc) => {
+        if (err) {
+            res.status(500).send({ message: err });
+            return;
+        }
+
+        if (!merc) {
+            res.status(400).send({ message: "Failed! MerchantId doesnt exist" });
+            return;
+        }
+        else{
+            console.log("doesnt exist")
+            const service = Service.create({ 
+                merchantid:req.body.merchantid, 
+                title:req.body.title, 
+                description:req.body.description,
+                price:req.body.price,
+                duration:req.body.duration           
+            })
+            res.status(200).send('service sent')
+        }
+    })
+})
+
+router.get('/view-service/:id', (req,res) =>{
+    //console.log("hello")
+    Service.find({ merchantid: req.params.id }).then((service) => {
+        return res.status(201).json({
+            service:service
+        });
+      });
+
+})
+router.delete('/delete-service/:id', (req,res,next)=>{
+    Service.findByIdAndDelete(req.params.id).then(service=>{
+        if(service){
+            res.status(200).json(service);
+        }
+        else{
+            res.status(404).json({ message: "Service not found" })
+        }
+    })
+})
 module.exports = router;  

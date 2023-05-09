@@ -5,6 +5,9 @@ const requestSchema = mongoose.Schema({
     userid:{
         type:String
     },
+    useremail:{
+        ttype:String
+    },
     merchantid:{
         type:String
     },

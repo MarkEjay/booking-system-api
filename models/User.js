@@ -22,6 +22,12 @@ const userSchema = mongoose.Schema({
     password: {
         type: String, require: true
     },
+    isActive:{
+        type: String, require:true
+    },
+    confirmationCode:{
+        type:String, require:true
+    }
 })
 
 // userSchema.post('save', (doc, next) => {
