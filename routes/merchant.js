@@ -84,7 +84,7 @@ router.post('/signup',  (req, res) => {
                             email:req.body.email, 
                             password: bcrypt.hashSync(req.body.password,8)})
                         
-                        res.status(200).send('merchant created')
+                        res.status(200).send({message:'merchant created'})
                     }
                 })
                 // console.log("doesnt exist")

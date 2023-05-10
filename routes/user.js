@@ -116,7 +116,7 @@ router.post('/signup',  (req, res) => {
                 }
                     )
                 
-                res.status(200).send('user created')
+                res.status(200).send({message: 'user created'})
             }
 
         });
