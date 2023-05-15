@@ -6,7 +6,7 @@ const requestSchema = mongoose.Schema({
         type:String
     },
     useremail:{
-        ttype:String
+        type:String
     },
     merchantid:{
         type:String

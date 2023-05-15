@@ -49,7 +49,7 @@ router.post('/signup',  (req, res) => {
     try {
 
         Merchant.findOne({
-            email: req.body.email
+            email: req.body.email.toLowerCase()
         }).exec((err, merchant) => {
             if (err) {
                 res.status(500).send({ message: err });
@@ -62,7 +62,7 @@ router.post('/signup',  (req, res) => {
             }
             else {
                 Merchant.findOne({
-                    merchantid: req.body.merchantid
+                    merchantid: req.body.merchantid.toLowerCase()
                 }).exec((err, merc) => {
                     if (err) {
                         res.status(500).send({ message: err });
@@ -78,10 +78,10 @@ router.post('/signup',  (req, res) => {
                         const merchant = Merchant.create({ firstname:req.body.firstname, 
                             lastname:req.body.lastname, 
                             companyname:req.body.companyname, 
-                            merchantid:req.body.merchantid,
+                            merchantid:req.body.merchantid.toLowerCase(),
                             phone:req.body.phone, 
                             role:req.body.role,
-                            email:req.body.email, 
+                            email:req.body.email.toLowerCase(), 
                             password: bcrypt.hashSync(req.body.password,8)})
                         
                         res.status(200).send({message:'merchant created'})
@@ -122,7 +122,7 @@ router.post('/login', (req, res) => {
    // const { email, password } = req.body;
     try {
         Merchant.findOne({
-            email: req.body.email
+            email: req.body.email.toLowerCase()
         }).exec((err, merchant) => {
             if (err) {
                 res.status(500).send({ message: err });
@@ -153,7 +153,7 @@ router.post('/login', (req, res) => {
                 merchantid:merchant.merchantid,
                 phone:merchant.phone, 
                 role:merchant.role,
-                email: merchant.email,
+                email: merchant.email.toLowerCase(),
                 accessToken: token
               });
         })
@@ -163,6 +163,35 @@ router.post('/login', (req, res) => {
     return res.status(404).send('Error: Cant Login')
 }
 })
+
+router.get('/get-merchant/:id', (req, res) => {
+    Merchant.findById(req.params.id).then(mer => {
+        if (mer) {
+            res.status(200).json(mer);
+        }
+        else {
+            res.status(404).json({ message: "Merchant not found" })
+        }
+    })
+})
+
+
+router.put('/edit-merchant/:id', (req,res,next)=>{
+    Merchant.findById(req.params.id).then(mer=>{
+        if(mer){
+            console.log(mer)
+
+            mer.email=req.body.email;
+            mer.save()
+            res.status(200).json({mer});
+
+        }
+        else{
+            res.status(404).json({message: "Merchant not updated"})
+        }
+    })
+})
+
 
 router.get('/view-request/:id', (req,res) =>{
     Requests.find({ merchantid: req.params.id }).then((request) => {

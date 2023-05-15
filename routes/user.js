@@ -42,10 +42,10 @@ router.get('/home', verifyToken, async (req,res) => {
 })
 
 
-router.get("get-user/:id", (req, res, next) => {
+router.get('/get-user/:id', (req, res) => {
     User.findById(req.params.id).then(user => {
         if (user) {
-            res.status(200).json(expense);
+            res.status(200).json(user);
         }
         else {
             res.status(404).json({ message: "User not found" })
@@ -92,7 +92,7 @@ router.post('/signup',  (req, res) => {
     try {
 
         User.findOne({
-            email: req.body.email
+            email: req.body.email.toLowerCase()
         }).exec((err, user) => {
             if (err) {
                 res.status(500).send({ message: err });
@@ -109,7 +109,7 @@ router.post('/signup',  (req, res) => {
                     lastname:req.body.lastname, 
                     phone:req.body.phone,
                     role:req.body.role,
-                    email:req.body.email, 
+                    email:req.body.email.toLowerCase(), 
                     password: bcrypt.hashSync(req.body.password,8),
                     isActive:"false",
                     confirmationCode:code
@@ -143,7 +143,7 @@ router.post('/login', (req, res) => {
     //const { email, password } = req.body;
     try {
         User.findOne({
-            email: req.body.email
+            email: req.body.email.toLowerCase()
         }).exec((err, user) => {
             if (err) {
                 res.status(500).send({ message: err });
@@ -193,7 +193,7 @@ router.post('/login', (req, res) => {
                 lastname:user.lastname,
                 phone:user.phone,
                 role:user.role,
-                email: user.email,
+                email: user.email.toLowerCase(),
                 accessToken: token
               });
         })
@@ -204,18 +204,18 @@ router.post('/login', (req, res) => {
 }
 })
 
-router.put('/edit-user/:id', (req,res,next)=>{
+router.put('/edit-merchant/:id', (req,res,next)=>{
     User.findById(req.params.id).then(user=>{
         if(user){
             console.log(user)
 
             user.email=req.body.email;
             user.save()
-            res.status(200).json(user);
+            res.status(200).json({user});
 
         }
         else{
-            res.status(404).json({message: "Request not found"})
+            res.status(404).json({message: "user not updated"})
         }
     })
 })

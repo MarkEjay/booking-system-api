@@ -18,7 +18,7 @@ const merchantSchema = mongoose.Schema({
         type:String, require:true,unique:true
     },
     phone: {
-        type: Number, require: true
+        type: String, require: true
     },
     role: {
         type: String, require:true
