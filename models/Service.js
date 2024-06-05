@@ -15,7 +15,10 @@ const  serviceSchema= mongoose.Schema({
         type:Number
     },
     duration:{
-        type:Number
+        type:String
+    },
+    profile:{
+        type:String
     }
 })
 

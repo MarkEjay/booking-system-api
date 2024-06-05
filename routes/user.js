@@ -1,4 +1,5 @@
 const express = require('express')
+require('dotenv').config()
 //const { findOne } = require('../models/User')
 const router = express.Router()
 const User = require('../models/User')
@@ -9,6 +10,7 @@ const { config } = require('dotenv');
 const verifyToken = require('../middleware/auth')
 const Requests = require('../models/Request')
 const Merchant = require('../models/Merchant')
+const cloudinary = require('cloudinary').v2;
 var nodemailer = require('nodemailer');
 
 
@@ -204,12 +206,13 @@ router.post('/login', (req, res) => {
 }
 })
 
-router.put('/edit-merchant/:id', (req,res,next)=>{
+router.put('/edit-user/:id', (req,res,next)=>{
     User.findById(req.params.id).then(user=>{
         if(user){
             console.log(user)
 
             user.email=req.body.email;
+            user.phone=req.body.phone;
             user.save()
             res.status(200).json({user});
 
@@ -265,6 +268,7 @@ router.post('/add-request', (req,res)=>{
     })
 })
 
+
 router.get('/view-request/:id', (req,res) =>{
     Requests.find({ userid: req.params.id }).then((request) => {
         return res.status(201).json({
@@ -272,8 +276,45 @@ router.get('/view-request/:id', (req,res) =>{
         });
       });
 
-})
+    //   console.log(cloudinary.config().cloud_name);
+    // , {public_id:"profile"}
+    // cloudinary.uploader.upload("./assets/dog.jpeg", {folder:"profile"}).then(result=>{
+    //     console.log(result.secure_url)
+    // })
+    // .catch(
+    //     result=>{
+    //         console.log(result)
+    //     }
+    // )
+    profileurl=""
+    this.profileurl=cloudinary.uploader.upload("./assets/dog.jpeg", {folder:"profile"}).then(result=>{
+        console.log(result.secure_url)
+        // return result.secure_url
+        // console.log(profileurl)
+    })
+    .catch(
+        result=>{
+            console.log(result)
+        }
+    )
+    console.log(this.profileurl)
+    // console.log(val("./assets/dog.jpeg"))
 
+})
+// const val=(a)=>{
+//     let pval;
+//    cloudinary.uploader.upload(a, {folder:"profile"}).then(result=>{
+//         this.pval = (result.secure_url)
+//         // console.log(this.pval)
+//         // console.log(result.secure_url)
+//    })
+//    .catch(
+//        result=>{
+//            console.log(result)
+//        }
+//    )
+// //    return this.pval
+// }
 
 // router.get('/view-request',verifyToken, (req,res) =>{
 //     Requests.find({ userid: req.userId }).then((request) => {

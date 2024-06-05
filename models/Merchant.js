@@ -44,6 +44,9 @@ const merchantSchema = mongoose.Schema({
     postalcode:{
         type: String, 
 
+    },
+    profile:{
+        type:String
     }
 })
 
